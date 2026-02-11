@@ -1,5 +1,4 @@
 import Stripe from "stripe";
-import { NextResponse } from "next/server";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import ExcelJS from "exceljs";
@@ -96,7 +95,7 @@ export async function POST(req: Request) {
 
   const out = await zip.generateAsync({ type: "uint8array" });
 
-return new NextResponse(out, {
+return new Response(out, {
   headers: {
     "content-type": "application/zip",
     "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
