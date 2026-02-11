@@ -94,12 +94,12 @@ export async function POST(req: Request) {
     ])
   );
 
-  const out = await zip.generateAsync({ type: "nodebuffer" });
+  const out = await zip.generateAsync({ type: "uint8array" });
 
-  return new NextResponse(out, {
-    headers: {
-      "content-type": "application/zip",
-      "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
-    },
-  });
+return new NextResponse(out, {
+  headers: {
+    "content-type": "application/zip",
+    "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
+  },
+});
 }
