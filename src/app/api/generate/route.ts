@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const sessionId = body.session_id as string;
 
-  if (!sessionId) return NextResponse.json({ error: "missing session_id" }, { status: 400 });
+  if (!sessionId) return Response.json({ error: "missing session_id" }, { status: 400 });
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     (session.mode === "payment" && session.payment_status === "paid") ||
     (session.mode === "subscription" && !!session.subscription);
 
-  if (!ok) return NextResponse.json({ error: "not paid" }, { status: 403 });
+  if (!ok) return Response.json({ error: "not paid" }, { status: 403 });
 
   const company = String(body.company || "").slice(0, 200);
   const address = String(body.address || "").slice(0, 200);
