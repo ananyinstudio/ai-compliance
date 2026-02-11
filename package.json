@@ -1,8 +1,18 @@
 {
+  "name": "ai-compliance",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
-    "stripe": "^16.0.0",
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "exceljs": "^4.4.0",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
-    "exceljs": "^4.4.0"
+    "stripe": "^16.0.0"
   }
 }
