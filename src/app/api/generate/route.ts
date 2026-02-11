@@ -95,7 +95,10 @@ export async function POST(req: Request) {
 
   const out = await zip.generateAsync({ type: "uint8array" });
 
-return new Response(out, {
+// гарантированно получаем ArrayBuffer
+const ab = out.buffer.slice(out.byteOffset, out.byteOffset + out.byteLength);
+
+return new Response(ab, {
   headers: {
     "content-type": "application/zip",
     "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
