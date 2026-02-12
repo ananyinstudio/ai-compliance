@@ -17,13 +17,38 @@ export default function Home() {
       <p>Pflichtdokumente (DE + EN) für Unternehmen, die KI einsetzen.</p>
 
       <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-        <button onClick={() => go("sub")} style={{ padding: "12px 16px" }}>
-          39 € / Monat (Abo)
-        </button>
-        <button onClick={() => go("one")} style={{ padding: "12px 16px" }}>
-          249 € einmalig
-        </button>
-      </div>
+  {/* Subscription – visible but disabled */}
+  <button
+    disabled
+    title="Coming soon"
+    style={{
+      padding: "12px 16px",
+      background: "#f2f2f2",
+      color: "#999",
+      border: "1px solid #ddd",
+      borderRadius: 10,
+      cursor: "not-allowed",
+      fontWeight: 600,
+    }}
+  >
+    39 € / Monat (Abo – bald verfügbar)
+  </button>
+
+  {/* One-time payment */}
+  <button
+    onClick={() => go("one")}
+    style={{
+      padding: "12px 16px",
+      borderRadius: 10,
+      border: "1px solid #ddd",
+      background: "white",
+      fontWeight: 600,
+      cursor: "pointer",
+    }}
+  >
+    249 € einmalig
+  </button>
+</div>
 
       <p style={{ marginTop: 24, opacity: 0.8 }}>
         Kein Ersatz für Rechtsberatung. Vorlagen &amp; Guidance.
