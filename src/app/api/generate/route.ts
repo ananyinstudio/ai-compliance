@@ -273,9 +273,6 @@ export async function POST(req: Request) {
 
   if (!ok) return Response.json({ error: "not paid" }, { status: 403 });
 
-  const company = String(body.company || "").slice(0, 200);
-  const address = String(body.address || "").slice(0, 200);
-
   const zip = new JSZip();
   const de = zip.folder("DE")!;
   const en = zip.folder("EN")!;
@@ -333,10 +330,14 @@ en.file(
 
   const out = await zip.generateAsync({ type: "arraybuffer" });
 
-  return new Response(out, {
-    headers: {
-      "content-type": "application/zip",
-      "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"'
-    }
-  });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+
+return new Response(out, {
+  headers: {
+    "content-type": "application/zip",
+    "content-disposition": `attachment; filename="AI-Compliance-DE-EN_${stamp}.zip"`,
+    "cache-control": "no-store, max-age=0",
+    "pragma": "no-cache"
+  }
+});
 }
