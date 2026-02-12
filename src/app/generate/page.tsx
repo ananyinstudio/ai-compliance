@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type PersonalData = "no" | "limited" | "regular";
 type YesNo = "no" | "yes";
@@ -59,10 +60,12 @@ const selectStyle: React.CSSProperties = {
 };
 
 export default function GeneratePage() {
+  const sp = useSearchParams();
+
   // Payment
   const [sessionId, setSessionId] = useState("");
 
-  // Client company details (THIS is what goes into PDFs)
+  // Client company details (go into PDFs)
   const [company, setCompany] = useState("");
   const [address, setAddress] = useState("");
 
@@ -84,6 +87,12 @@ export default function GeneratePage() {
   // UX
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+
+  // Auto-fill session_id from URL (?session_id=cs_...)
+  useEffect(() => {
+    const sid = sp.get("session_id");
+    if (sid && sid.startsWith("cs_")) setSessionId(sid);
+  }, [sp]);
 
   const toolsCsv = useMemo(() => {
     const t: string[] = [];
@@ -173,23 +182,24 @@ export default function GeneratePage() {
       <div style={{ marginBottom: 16 }}>
         <h1 style={{ margin: 0 }}>Dokumente generieren</h1>
         <div style={{ opacity: 0.75, marginTop: 8 }}>
-          Test Mode: Nach der Zahlung <code>/success</code> öffnen und <code>session_id=cs_...</code> kopieren.
+          Tipp: Nach der Zahlung kommen Sie über <code>/success</code> automatisch hierher – ohne Kopieren.
         </div>
       </div>
 
       <div style={{ display: "grid", gap: 14 }}>
-        <Card title="1) Zahlung" subtitle="Ohne gültige Zahlung (Test/Live) wird kein ZIP erstellt.">
-          <LabelRow label="session_id" hint="Muss mit cs_ beginnen (z. B. cs_test_...)">
+        <Card title="1) Zahlung" subtitle="Nur bezahlte Checkout-Sessions können Dokumente generieren.">
+          <LabelRow label="session_id" hint="Muss mit cs_ beginnen (z. B. cs_test_... / cs_live_...)">
             <input
               style={inputStyle}
-              placeholder="cs_test_..."
+              placeholder="cs_..."
               value={sessionId}
+              readOnly={sessionId.startsWith("cs_") && !!sp.get("session_id")}
               onChange={(e) => setSessionId(e.target.value)}
             />
           </LabelRow>
         </Card>
 
-        <Card title="2) Unternehmensdaten des Kunden" subtitle="Diese Angaben erscheinen in den PDFs.">
+        <Card title="2) Unternehmensdaten des Kunden" subtitle="Diese Angaben stehen in den PDFs.">
           <div style={{ display: "grid", gap: 12 }}>
             <LabelRow label="Firmenname" hint="z. B. Muster GmbH">
               <input
@@ -211,7 +221,7 @@ export default function GeneratePage() {
           </div>
         </Card>
 
-        <Card title="3) Fragebogen" subtitle="Damit die Dokumente nicht wie generische Templates aussehen.">
+        <Card title="3) Fragebogen" subtitle="Damit die Dokumente nicht generisch wirken.">
           <div style={{ display: "grid", gap: 12 }}>
             <LabelRow label="Branche">
               <select style={selectStyle} value={industry} onChange={(e) => setIndustry(e.target.value as Industry)}>
@@ -255,7 +265,8 @@ export default function GeneratePage() {
                   <input type="checkbox" checked={toolGemini} onChange={(e) => setToolGemini(e.target.checked)} />
                   Gemini
                 </label>
-                <LabelRow label="Andere (optional)" hint="z. B. 'Midjourney' oder 'Perplexity'">
+
+                <LabelRow label="Andere (optional)" hint="z. B. Midjourney, Perplexity">
                   <input style={inputStyle} value={toolOther} onChange={(e) => setToolOther(e.target.value)} />
                 </LabelRow>
               </div>
