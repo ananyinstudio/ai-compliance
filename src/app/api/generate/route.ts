@@ -44,15 +44,9 @@ export async function POST(req: Request) {
   const en = zip.folder("EN")!;
 
   de.file(
-    "KI-Nutzungsrichtlinie.pdf",
-    await makeSimplePdf("KI-Nutzungsrichtlinie", [
-      `Unternehmen: ${company}`,
-      `Adresse: ${address}`,
-      "",
-      "Dieses Dokument ist eine Vorlage und stellt keine Rechtsberatung dar.",
-      "Zweck: interne Regeln zur Nutzung von KI-Tools (z.B. ChatGPT, Copilot).",
-    ])
-  );
+  "KI-Nutzungsrichtlinie.pdf",
+  await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
+);
 
   en.file(
     "AI-Use-Policy.pdf",
