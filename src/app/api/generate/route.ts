@@ -91,13 +91,6 @@ export async function POST(req: Request) {
 
 const out = await zip.generateAsync({ type: "arraybuffer" });
 
-return new Response(out, {
-  headers: {
-    "content-type": "application/zip",
-    "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
-  },
-});
-
 function getKiPolicyDeLines(company: string, address: string) {
   return [
     "KI-Nutzungsrichtlinie",
@@ -171,4 +164,11 @@ function getKiPolicyDeLines(company: string, address: string) {
     "11. Inkrafttreten",
     "Diese Richtlinie tritt mit Veröffentlichung in Kraft."
   ];
+  
+  return new Response(out, {
+  headers: {
+    "content-type": "application/zip",
+    "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
+  },
+});
 }
