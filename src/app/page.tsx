@@ -31,3 +31,8 @@ export default function Home() {
     </main>
   );
 }
+
+<p style={{ marginTop: 24, opacity: 0.8 }}>
+  <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
+</p>
+
