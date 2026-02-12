@@ -69,18 +69,14 @@ export async function POST(req: Request) {
   de.file("Internes-KI-Verzeichnis.xlsx", xlsx);
   en.file("Internal-AI-Register.xlsx", xlsx);
 
- de.file(
-  "KI-Nutzungsrichtlinie.pdf",
-  await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
-);
+  de.file(
+    "KI-Nutzungsrichtlinie.pdf",
+    await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
+  );
 
   en.file(
-    "Compliance-Summary.pdf",
-    await makeSimplePdf("Compliance Summary (1 page)", [
-      `Company: ${company}`,
-      "Status: Documents generated",
-      "Note: Template only, not legal advice.",
-    ])
+    "KI-Nutzungsrichtlinie.pdf",
+    await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
   );
 
 const out = await zip.generateAsync({ type: "arraybuffer" });
