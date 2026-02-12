@@ -166,9 +166,9 @@ function getKiPolicyDeLines(company: string, address: string) {
   ];
   
   return new Response(out, {
-  headers: {
-    "content-type": "application/zip",
-    "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
-  },
-});
+    headers: {
+      "content-type": "application/zip",
+      "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
+    },
+  });
 }
