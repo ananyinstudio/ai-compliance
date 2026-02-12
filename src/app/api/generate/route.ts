@@ -43,22 +43,6 @@ export async function POST(req: Request) {
   const de = zip.folder("DE")!;
   const en = zip.folder("EN")!;
 
-  de.file(
-  "KI-Nutzungsrichtlinie.pdf",
-  await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
-);
-
-  en.file(
-    "AI-Use-Policy.pdf",
-    await makeSimplePdf("AI Use Policy", [
-      `Company: ${company}`,
-      `Address: ${address}`,
-      "",
-      "Template only. Not legal advice.",
-      "Purpose: internal rules for using AI tools (e.g., ChatGPT, Copilot).",
-    ])
-  );
-
   // Excel register (DE/EN одинаковый файл можно, но сделаем два для симметрии)
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("AI Register");
