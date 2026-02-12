@@ -164,6 +164,7 @@ function getKiPolicyDeLines(company: string, address: string) {
     "11. Inkrafttreten",
     "Diese Richtlinie tritt mit Veröffentlichung in Kraft."
   ];
+}
   
   return new Response(out, {
     headers: {
