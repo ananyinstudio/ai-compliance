@@ -10,16 +10,44 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06
 
 async function makeSimplePdf(title: string, lines: string[]) {
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([595, 842]);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
 
-  page.drawText(title, { x: 50, y: 800, size: 18, font });
+  const PAGE_W = 595;
+  const PAGE_H = 842;
+  const MARGIN_X = 50;
+  const MARGIN_TOP = 60;
+  const MARGIN_BOTTOM = 50;
+  const TITLE_SIZE = 18;
+  const TEXT_SIZE = 11;
+  const LINE_GAP = 16;
+  const MAX_CHARS = 95; // грубый перенос по длине (MVP)
 
-  let y = 770;
-  for (const l of lines) {
-    page.drawText(String(l), { x: 50, y, size: 11, font });
-    y -= 16;
-    if (y < 50) break; // MVP: без переноса на новую страницу
+  const wrap = (s: string) => {
+    const out: string[] = [];
+    const text = String(s ?? "");
+    if (!text) return [""];
+    if (text.length <= MAX_CHARS) return [text];
+    for (let i = 0; i < text.length; i += MAX_CHARS) {
+      out.push(text.slice(i, i + MAX_CHARS));
+    }
+    return out;
+  };
+
+  let page = pdf.addPage([PAGE_W, PAGE_H]);
+  page.drawText(title, { x: MARGIN_X, y: PAGE_H - MARGIN_TOP, size: TITLE_SIZE, font });
+
+  let y = PAGE_H - MARGIN_TOP - 30;
+
+  for (const line of lines) {
+    for (const chunk of wrap(line)) {
+      if (y < MARGIN_BOTTOM) {
+        page = pdf.addPage([PAGE_W, PAGE_H]);
+        page.drawText(title, { x: MARGIN_X, y: PAGE_H - MARGIN_TOP, size: TITLE_SIZE, font });
+        y = PAGE_H - MARGIN_TOP - 30;
+      }
+      page.drawText(chunk, { x: MARGIN_X, y, size: TEXT_SIZE, font });
+      y -= LINE_GAP;
+    }
   }
 
   return Buffer.from(await pdf.save());
