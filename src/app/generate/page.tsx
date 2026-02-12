@@ -215,7 +215,7 @@ function GenerateInner() {
             <LabelRow label="Adresse" hint="Straße, PLZ Ort">
               <input
                 style={inputStyle}
-                placeholder="Beispielstraße 1, 10115 Berlin"
+                placeholder="Musterstr. 1, 12345 Musterstadt"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
