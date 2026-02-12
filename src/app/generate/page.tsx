@@ -62,8 +62,9 @@ export default function GeneratePage() {
   // Payment
   const [sessionId, setSessionId] = useState("");
 
-  // Company details (мы фиксировали GmbH в backend, но адрес нужен в документах)
-  const [address, setAddress] = useState("Berliner Str. 6, 15345 Altlandsberg");
+  // Client company details (THIS is what goes into PDFs)
+  const [company, setCompany] = useState("");
+  const [address, setAddress] = useState("");
 
   // Questionnaire
   const [industry, setIndustry] = useState<Industry>("it");
@@ -95,13 +96,20 @@ export default function GeneratePage() {
   }, [toolChatGPT, toolCopilot, toolClaude, toolGemini, toolOther]);
 
   const canSubmit = useMemo(() => {
-    return !!sessionId.trim() && !!address.trim() && toolsCsv.length > 0 && !!useCase.trim();
-  }, [sessionId, address, toolsCsv, useCase]);
+    return (
+      !!sessionId.trim() &&
+      sessionId.trim().startsWith("cs_") &&
+      !!company.trim() &&
+      !!address.trim() &&
+      toolsCsv.length > 0 &&
+      !!useCase.trim()
+    );
+  }, [sessionId, company, address, toolsCsv, useCase]);
 
   async function onGenerate() {
     setMsg(null);
     if (!canSubmit) {
-      setMsg("Bitte fülle session_id, Adresse, Tools und Use Case aus.");
+      setMsg("Bitte fülle session_id (cs_...), Firmenname, Adresse, Tools und Use Case aus.");
       return;
     }
 
@@ -113,16 +121,13 @@ export default function GeneratePage() {
         cache: "no-store",
         body: JSON.stringify({
           session_id: sessionId.trim(),
+          company: company.trim(),
           address: address.trim(),
-
-          // backend сейчас читает tools/useCase/personalData/externalUse/automatedDecisions
           tools: toolsCsv,
           useCase: useCase.trim(),
           personalData,
           externalUse,
           automatedDecisions,
-
-          // эти поля пока не использует route.ts — но мы их добавим в PDF/Excel следующим шагом
           industry,
           employees,
         }),
@@ -168,13 +173,13 @@ export default function GeneratePage() {
       <div style={{ marginBottom: 16 }}>
         <h1 style={{ margin: 0 }}>Dokumente generieren</h1>
         <div style={{ opacity: 0.75, marginTop: 8 }}>
-          Test Mode: Öffne nach der Zahlung <code>/success</code> und kopiere <code>session_id</code>.
+          Test Mode: Nach der Zahlung <code>/success</code> öffnen und <code>session_id=cs_...</code> kopieren.
         </div>
       </div>
 
       <div style={{ display: "grid", gap: 14 }}>
-        <Card title="1) Zahlung" subtitle="Ohne gültige Zahlung (Test) wird kein ZIP erstellt.">
-          <LabelRow label="session_id" hint="Beispiel: cs_test_... (aus der /success URL)">
+        <Card title="1) Zahlung" subtitle="Ohne gültige Zahlung (Test/Live) wird kein ZIP erstellt.">
+          <LabelRow label="session_id" hint="Muss mit cs_ beginnen (z. B. cs_test_...)">
             <input
               style={inputStyle}
               placeholder="cs_test_..."
@@ -184,15 +189,26 @@ export default function GeneratePage() {
           </LabelRow>
         </Card>
 
-        <Card title="2) Unternehmensdaten" subtitle="Diese Angaben erscheinen im Dokumentkopf.">
-          <LabelRow label="Adresse (für Dokumente)">
-            <input
-              style={inputStyle}
-              placeholder="Straße, PLZ Ort"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </LabelRow>
+        <Card title="2) Unternehmensdaten des Kunden" subtitle="Diese Angaben erscheinen in den PDFs.">
+          <div style={{ display: "grid", gap: 12 }}>
+            <LabelRow label="Firmenname" hint="z. B. Muster GmbH">
+              <input
+                style={inputStyle}
+                placeholder="Muster GmbH"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </LabelRow>
+
+            <LabelRow label="Adresse" hint="Straße, PLZ Ort">
+              <input
+                style={inputStyle}
+                placeholder="Beispielstraße 1, 10115 Berlin"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </LabelRow>
+          </div>
         </Card>
 
         <Card title="3) Fragebogen" subtitle="Damit die Dokumente nicht wie generische Templates aussehen.">
@@ -249,7 +265,7 @@ export default function GeneratePage() {
               </div>
             </div>
 
-            <LabelRow label="Use Case (kurz)" hint="Was macht ihr konkret mit KI?">
+            <LabelRow label="Use Case (kurz)" hint="Was macht der Kunde konkret mit KI?">
               <input style={inputStyle} value={useCase} onChange={(e) => setUseCase(e.target.value)} />
             </LabelRow>
 
@@ -302,7 +318,7 @@ export default function GeneratePage() {
           </button>
 
           <div style={{ marginTop: 10, opacity: 0.75, fontSize: 13 }}>
-            {canSubmit ? "Bereit." : "Fehlt noch: session_id + Adresse + Tools + Use Case"}
+            {canSubmit ? "Bereit." : "Fehlt noch: cs_ session_id + Firmenname + Adresse + Tools + Use Case"}
           </div>
 
           {msg && <div style={{ marginTop: 10, padding: 10, background: "#f5f5f5", borderRadius: 10 }}>{msg}</div>}
