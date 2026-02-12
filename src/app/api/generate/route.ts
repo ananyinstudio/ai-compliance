@@ -3,9 +3,6 @@ import JSZip from "jszip";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import ExcelJS from "exceljs";
 
-// BUILD_MARKER: D373C82_CHECK_2026_02_12
-export const dynamic = "force-dynamic";
-
 export const runtime = "nodejs";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-06-20" });
