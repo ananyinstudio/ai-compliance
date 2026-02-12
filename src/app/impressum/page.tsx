@@ -19,7 +19,7 @@ export default function Impressum() {
       </p>
 
       <p>
-        <strong>E-Mail:</strong> contact@ananyin.studio
+        <strong>E-Mail:</strong> info@ananyin-studio.de
       </p>
 
       <hr />
