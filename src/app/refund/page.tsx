@@ -25,7 +25,7 @@ export default function Refund() {
       </p>
 
       <p>
-        Kontakt: contact@ananyin.studio
+        Kontakt: info@ananyin-studio.de
       </p>
     </main>
   );
