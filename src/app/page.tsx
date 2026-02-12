@@ -33,6 +33,10 @@ export default function Home() {
 }
 
 <p style={{ marginTop: 24, opacity: 0.8 }}>
-  <a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a>
+  <a href="/impressum">Impressum</a> ·{" "}
+  <a href="/datenschutz">Datenschutz</a> ·{" "}
+  <a href="/terms">Terms</a> ·{" "}
+  <a href="/refund">Refund</a>
 </p>
+
 
