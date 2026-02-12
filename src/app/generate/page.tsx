@@ -4,26 +4,104 @@ import { useMemo, useState } from "react";
 
 type PersonalData = "no" | "limited" | "regular";
 type YesNo = "no" | "yes";
+type Employees = "1-5" | "6-20" | "21-50" | "51-200" | "200+";
+type Industry =
+  | "it"
+  | "consulting"
+  | "marketing"
+  | "ecommerce"
+  | "health"
+  | "finance"
+  | "education"
+  | "other";
+
+function Card(props: { title: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <section
+      style={{
+        background: "white",
+        border: "1px solid #e6e6e6",
+        borderRadius: 12,
+        padding: 16,
+        boxShadow: "0 1px 8px rgba(0,0,0,0.04)",
+      }}
+    >
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>{props.title}</div>
+        {props.subtitle && <div style={{ opacity: 0.7, marginTop: 4 }}>{props.subtitle}</div>}
+      </div>
+      {props.children}
+    </section>
+  );
+}
+
+function LabelRow(props: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <label style={{ display: "grid", gap: 6 }}>
+      <div style={{ fontWeight: 600 }}>{props.label}</div>
+      {props.hint && <div style={{ opacity: 0.7, fontSize: 13 }}>{props.hint}</div>}
+      {props.children}
+    </label>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: 10,
+  borderRadius: 10,
+  border: "1px solid #d9d9d9",
+  outline: "none",
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  background: "white",
+};
 
 export default function GeneratePage() {
+  // Payment
   const [sessionId, setSessionId] = useState("");
-  const [address, setAddress] = useState("");
 
-  const [tools, setTools] = useState("ChatGPT");
+  // Company details (мы фиксировали GmbH в backend, но адрес нужен в документах)
+  const [address, setAddress] = useState("Berliner Str. 6, 15345 Altlandsberg");
+
+  // Questionnaire
+  const [industry, setIndustry] = useState<Industry>("it");
+  const [employees, setEmployees] = useState<Employees>("1-5");
+
+  const [toolChatGPT, setToolChatGPT] = useState(true);
+  const [toolCopilot, setToolCopilot] = useState(false);
+  const [toolClaude, setToolClaude] = useState(false);
+  const [toolGemini, setToolGemini] = useState(false);
+  const [toolOther, setToolOther] = useState("");
   const [useCase, setUseCase] = useState("Textentwürfe und Zusammenfassungen");
+
   const [personalData, setPersonalData] = useState<PersonalData>("no");
   const [externalUse, setExternalUse] = useState<YesNo>("no");
   const [automatedDecisions, setAutomatedDecisions] = useState<YesNo>("no");
 
+  // UX
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const canSubmit = useMemo(() => !!sessionId.trim() && !!address.trim(), [sessionId, address]);
+  const toolsCsv = useMemo(() => {
+    const t: string[] = [];
+    if (toolChatGPT) t.push("ChatGPT");
+    if (toolCopilot) t.push("Copilot");
+    if (toolClaude) t.push("Claude");
+    if (toolGemini) t.push("Gemini");
+    if (toolOther.trim()) t.push(toolOther.trim());
+    return t.join(", ");
+  }, [toolChatGPT, toolCopilot, toolClaude, toolGemini, toolOther]);
+
+  const canSubmit = useMemo(() => {
+    return !!sessionId.trim() && !!address.trim() && toolsCsv.length > 0 && !!useCase.trim();
+  }, [sessionId, address, toolsCsv, useCase]);
 
   async function onGenerate() {
     setMsg(null);
     if (!canSubmit) {
-      setMsg("Bitte session_id und Adresse angeben.");
+      setMsg("Bitte fülle session_id, Adresse, Tools und Use Case aus.");
       return;
     }
 
@@ -36,11 +114,17 @@ export default function GeneratePage() {
         body: JSON.stringify({
           session_id: sessionId.trim(),
           address: address.trim(),
-          tools: tools.trim(), // CSV: "ChatGPT, Copilot"
+
+          // backend сейчас читает tools/useCase/personalData/externalUse/automatedDecisions
+          tools: toolsCsv,
           useCase: useCase.trim(),
           personalData,
           externalUse,
           automatedDecisions,
+
+          // эти поля пока не использует route.ts — но мы их добавим в PDF/Excel следующим шагом
+          industry,
+          employees,
         }),
       });
 
@@ -72,100 +156,157 @@ export default function GeneratePage() {
   }
 
   return (
-    <main style={{ maxWidth: 900, margin: "40px auto", padding: 16, fontFamily: "system-ui" }}>
-      <h1>Dokumente generieren</h1>
+    <main
+      style={{
+        maxWidth: 980,
+        margin: "32px auto",
+        padding: 16,
+        fontFamily: "system-ui",
+        background: "#fafafa",
+      }}
+    >
+      <div style={{ marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>Dokumente generieren</h1>
+        <div style={{ opacity: 0.75, marginTop: 8 }}>
+          Test Mode: Öffne nach der Zahlung <code>/success</code> und kopiere <code>session_id</code>.
+        </div>
+      </div>
 
-      <p style={{ opacity: 0.8 }}>
-        Test Mode: Verwende die session_id aus der /success URL (session_id=...).
-      </p>
+      <div style={{ display: "grid", gap: 14 }}>
+        <Card title="1) Zahlung" subtitle="Ohne gültige Zahlung (Test) wird kein ZIP erstellt.">
+          <LabelRow label="session_id" hint="Beispiel: cs_test_... (aus der /success URL)">
+            <input
+              style={inputStyle}
+              placeholder="cs_test_..."
+              value={sessionId}
+              onChange={(e) => setSessionId(e.target.value)}
+            />
+          </LabelRow>
+        </Card>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        <label>
-          <div>session_id</div>
-          <input
-            style={{ width: "100%", padding: 10 }}
-            placeholder="cs_test_..."
-            value={sessionId}
-            onChange={(e) => setSessionId(e.target.value)}
-          />
-        </label>
+        <Card title="2) Unternehmensdaten" subtitle="Diese Angaben erscheinen im Dokumentkopf.">
+          <LabelRow label="Adresse (für Dokumente)">
+            <input
+              style={inputStyle}
+              placeholder="Straße, PLZ Ort"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </LabelRow>
+        </Card>
 
-        <label>
-          <div>Adresse (für Dokumente)</div>
-          <input
-            style={{ width: "100%", padding: 10 }}
-            placeholder="Berliner Str. 6, 15345 Altlandsberg"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </label>
+        <Card title="3) Fragebogen" subtitle="Damit die Dokumente nicht wie generische Templates aussehen.">
+          <div style={{ display: "grid", gap: 12 }}>
+            <LabelRow label="Branche">
+              <select style={selectStyle} value={industry} onChange={(e) => setIndustry(e.target.value as Industry)}>
+                <option value="it">IT / Software</option>
+                <option value="consulting">Consulting</option>
+                <option value="marketing">Marketing / Media</option>
+                <option value="ecommerce">E-Commerce</option>
+                <option value="health">Health</option>
+                <option value="finance">Finance</option>
+                <option value="education">Education</option>
+                <option value="other">Other</option>
+              </select>
+            </LabelRow>
 
-        <label>
-          <div>KI-Tools (kommagetrennt)</div>
-          <input
-            style={{ width: "100%", padding: 10 }}
-            placeholder="ChatGPT, Copilot, Claude"
-            value={tools}
-            onChange={(e) => setTools(e.target.value)}
-          />
-        </label>
+            <LabelRow label="Mitarbeiterzahl">
+              <select style={selectStyle} value={employees} onChange={(e) => setEmployees(e.target.value as Employees)}>
+                <option value="1-5">1–5</option>
+                <option value="6-20">6–20</option>
+                <option value="21-50">21–50</option>
+                <option value="51-200">51–200</option>
+                <option value="200+">200+</option>
+              </select>
+            </LabelRow>
 
-        <label>
-          <div>Use Case (kurz)</div>
-          <input
-            style={{ width: "100%", padding: 10 }}
-            placeholder="z.B. Textentwürfe, Zusammenfassungen, Ideen"
-            value={useCase}
-            onChange={(e) => setUseCase(e.target.value)}
-          />
-        </label>
+            <div style={{ display: "grid", gap: 8 }}>
+              <div style={{ fontWeight: 600 }}>KI-Tools</div>
+              <div style={{ display: "grid", gap: 6 }}>
+                <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input type="checkbox" checked={toolChatGPT} onChange={(e) => setToolChatGPT(e.target.checked)} />
+                  ChatGPT
+                </label>
+                <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input type="checkbox" checked={toolCopilot} onChange={(e) => setToolCopilot(e.target.checked)} />
+                  Copilot
+                </label>
+                <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input type="checkbox" checked={toolClaude} onChange={(e) => setToolClaude(e.target.checked)} />
+                  Claude
+                </label>
+                <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <input type="checkbox" checked={toolGemini} onChange={(e) => setToolGemini(e.target.checked)} />
+                  Gemini
+                </label>
+                <LabelRow label="Andere (optional)" hint="z. B. 'Midjourney' oder 'Perplexity'">
+                  <input style={inputStyle} value={toolOther} onChange={(e) => setToolOther(e.target.value)} />
+                </LabelRow>
+              </div>
 
-        <label>
-          <div>Personenbezogene Daten</div>
-          <select
-            style={{ width: "100%", padding: 10 }}
-            value={personalData}
-            onChange={(e) => setPersonalData(e.target.value as PersonalData)}
+              <div style={{ opacity: 0.75, fontSize: 13 }}>
+                Wird gesendet als: <code>{toolsCsv || "—"}</code>
+              </div>
+            </div>
+
+            <LabelRow label="Use Case (kurz)" hint="Was macht ihr konkret mit KI?">
+              <input style={inputStyle} value={useCase} onChange={(e) => setUseCase(e.target.value)} />
+            </LabelRow>
+
+            <LabelRow label="Personenbezogene Daten">
+              <select
+                style={selectStyle}
+                value={personalData}
+                onChange={(e) => setPersonalData(e.target.value as PersonalData)}
+              >
+                <option value="no">Keine</option>
+                <option value="limited">Begrenzt</option>
+                <option value="regular">Regelmäßig</option>
+              </select>
+            </LabelRow>
+
+            <LabelRow label="Externe Nutzung von Outputs">
+              <select style={selectStyle} value={externalUse} onChange={(e) => setExternalUse(e.target.value as YesNo)}>
+                <option value="no">Nein</option>
+                <option value="yes">Ja</option>
+              </select>
+            </LabelRow>
+
+            <LabelRow label="Automatisierte Entscheidungen mit Wirkung">
+              <select
+                style={selectStyle}
+                value={automatedDecisions}
+                onChange={(e) => setAutomatedDecisions(e.target.value as YesNo)}
+              >
+                <option value="no">Nein</option>
+                <option value="yes">Ja</option>
+              </select>
+            </LabelRow>
+          </div>
+        </Card>
+
+        <Card title="4) ZIP erstellen" subtitle="Erstellt DE+EN PDFs + Excel-Register.">
+          <button
+            onClick={onGenerate}
+            disabled={!canSubmit || busy}
+            style={{
+              padding: 12,
+              fontWeight: 700,
+              borderRadius: 12,
+              border: "1px solid #d9d9d9",
+              background: !canSubmit || busy ? "#f0f0f0" : "white",
+              cursor: !canSubmit || busy ? "not-allowed" : "pointer",
+            }}
           >
-            <option value="no">Keine</option>
-            <option value="limited">Begrenzt</option>
-            <option value="regular">Regelmäßig</option>
-          </select>
-        </label>
+            {busy ? "Erstelle ZIP..." : "ZIP erstellen"}
+          </button>
 
-        <label>
-          <div>Externe Nutzung von Outputs</div>
-          <select
-            style={{ width: "100%", padding: 10 }}
-            value={externalUse}
-            onChange={(e) => setExternalUse(e.target.value as YesNo)}
-          >
-            <option value="no">Nein</option>
-            <option value="yes">Ja</option>
-          </select>
-        </label>
+          <div style={{ marginTop: 10, opacity: 0.75, fontSize: 13 }}>
+            {canSubmit ? "Bereit." : "Fehlt noch: session_id + Adresse + Tools + Use Case"}
+          </div>
 
-        <label>
-          <div>Automatisierte Entscheidungen mit Wirkung</div>
-          <select
-            style={{ width: "100%", padding: 10 }}
-            value={automatedDecisions}
-            onChange={(e) => setAutomatedDecisions(e.target.value as YesNo)}
-          >
-            <option value="no">Nein</option>
-            <option value="yes">Ja</option>
-          </select>
-        </label>
-
-        <button
-          onClick={onGenerate}
-          disabled={!canSubmit || busy}
-          style={{ padding: 12, fontWeight: 600, cursor: busy ? "not-allowed" : "pointer" }}
-        >
-          {busy ? "Erstelle ZIP..." : "ZIP erstellen"}
-        </button>
-
-        {msg && <div style={{ padding: 10, background: "#f5f5f5" }}>{msg}</div>}
+          {msg && <div style={{ marginTop: 10, padding: 10, background: "#f5f5f5", borderRadius: 10 }}>{msg}</div>}
+        </Card>
       </div>
     </main>
   );
