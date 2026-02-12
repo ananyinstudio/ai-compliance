@@ -77,7 +77,7 @@ export async function POST(req: Request) {
 
  de.file(
   "KI-Nutzungsrichtlinie.pdf",
-  await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDe(company).split("\n"))
+  await makeSimplePdf("KI-Nutzungsrichtlinie", getKiPolicyDeLines(company, address))
 );
 
   en.file(
@@ -97,75 +97,78 @@ return new Response(out, {
     "content-disposition": 'attachment; filename="AI-Compliance-DE-EN.zip"',
   },
 });
-function getKiPolicyDe(company: string) {
-  return `
-KI-Nutzungsrichtlinie
-für den Einsatz von Künstlicher Intelligenz
 
-Unternehmen: ${company}
-
-Titel
-KI-Nutzungsrichtlinie
-für den Einsatz von Künstlicher Intelligenz im Unternehmen
-1. Zweck der Richtlinie
-Diese Richtlinie regelt die Nutzung von Systemen der Künstlichen Intelligenz (KI) innerhalb des Unternehmens. Ziel ist es, einen verantwortungsvollen, sicheren und rechtskonformen Einsatz von KI-Anwendungen sicherzustellen.
-Die Richtlinie dient insbesondere:
-der Risikominimierung
-der Einhaltung regulatorischer Anforderungen (u. a. EU AI Act)
-dem Schutz personenbezogener Daten
-der Wahrung von Geschäfts- und Betriebsgeheimnissen
-der Vermeidung haftungsrechtlicher Risiken
-2. Geltungsbereich
-Diese Richtlinie gilt für alle Mitarbeitenden, Führungskräfte, freien Mitarbeitenden sowie sonstige Personen, die im Namen des Unternehmens KI-Systeme einsetzen.
-Sie umfasst sowohl:
-öffentlich zugängliche KI-Tools (z. B. generative KI-Systeme)
-unternehmensinterne KI-Lösungen
-KI-Funktionen in Drittsoftware
-3. Begriffsbestimmungen
-Im Sinne dieser Richtlinie bezeichnet:
-Künstliche Intelligenz (KI):
-Softwaregestützte Systeme, die Inhalte generieren, Entscheidungen unterstützen oder automatisierte Analysen durchführen.
-Generative KI:
-KI-Systeme, die Texte, Bilder, Code oder sonstige Inhalte erzeugen.
-4. Zulässige Nutzung
-Die Nutzung von KI-Systemen ist grundsätzlich zulässig, sofern:
-keine vertraulichen oder geheimhaltungsbedürftigen Informationen ungeschützt eingegeben werden
-keine personenbezogenen Daten ohne Rechtsgrundlage verarbeitet werden
-Ergebnisse vor externer Verwendung geprüft werden
-keine diskriminierenden oder rechtswidrigen Inhalte erzeugt oder verbreitet werden
-Die finale Verantwortung für erzeugte Inhalte verbleibt stets beim verantwortlichen Mitarbeitenden.
-5. Verbotene Nutzung
-Untersagt ist insbesondere:
-die Eingabe von Betriebs- und Geschäftsgeheimnissen in öffentliche KI-Systeme
-die Verarbeitung sensibler personenbezogener Daten ohne ausdrückliche Freigabe
-der Einsatz von KI zur automatisierten Entscheidungsfindung mit rechtlicher Wirkung ohne gesonderte Prüfung
-die Nutzung von KI zur Erstellung rechtswidriger Inhalte
-6. Datenschutz und Informationssicherheit
-Bei der Nutzung von KI-Systemen sind die Vorgaben der DSGVO sowie interne Datenschutzrichtlinien einzuhalten.
-Insbesondere ist sicherzustellen, dass:
-keine besonderen Kategorien personenbezogener Daten verarbeitet werden
-Auftragsverarbeitungsverträge geprüft sind
-Speicherorte und Datenflüsse transparent dokumentiert sind
-7. Transparenz und Dokumentation
-Der Einsatz von KI-Systemen ist intern zu dokumentieren.
-Hierzu gehört insbesondere:
-Bezeichnung des eingesetzten Tools
-Zweck der Nutzung
-Art der verarbeiteten Daten
-Risikobewertung
-8. Schulung und Sensibilisierung
-Mitarbeitende sind regelmäßig über:
-Risiken generativer KI
-Datenschutzanforderungen
-sichere Nutzung
-zu informieren.
-9. Verantwortlichkeiten
-Die Geschäftsleitung trägt die Gesamtverantwortung für die Einführung und Überwachung dieser Richtlinie.
-Führungskräfte stellen die Einhaltung im jeweiligen Verantwortungsbereich sicher.
-10. Haftungsausschluss
-Diese Richtlinie stellt eine interne Organisationsmaßnahme dar.
-Sie ersetzt keine individuelle Rechtsberatung.
-11. Inkrafttreten
-Diese Richtlinie tritt mit Veröffentlichung in Kraft.
-`;
+function getKiPolicyDeLines(company: string, address: string) {
+  return [
+    "KI-Nutzungsrichtlinie",
+    "für den Einsatz von Künstlicher Intelligenz im Unternehmen",
+    "",
+    `Unternehmen: ${company}`,
+    `Adresse: ${address}`,
+    "",
+    "1. Zweck der Richtlinie",
+    "Diese Richtlinie regelt die Nutzung von Systemen der Künstlichen Intelligenz (KI) innerhalb des Unternehmens. Ziel ist es, einen verantwortungsvollen, sicheren und rechtskonformen Einsatz von KI-Anwendungen sicherzustellen.",
+    "",
+    "Die Richtlinie dient insbesondere:",
+    "- der Risikominimierung",
+    "- der Einhaltung regulatorischer Anforderungen (u. a. EU AI Act)",
+    "- dem Schutz personenbezogener Daten",
+    "- der Wahrung von Geschäfts- und Betriebsgeheimnissen",
+    "- der Vermeidung haftungsrechtlicher Risiken",
+    "",
+    "2. Geltungsbereich",
+    "Diese Richtlinie gilt für alle Mitarbeitenden, Führungskräfte, freie Mitarbeitende sowie sonstige Personen, die im Namen des Unternehmens KI-Systeme einsetzen.",
+    "",
+    "Sie umfasst sowohl:",
+    "- öffentlich zugängliche KI-Tools (z. B. generative KI-Systeme)",
+    "- unternehmensinterne KI-Lösungen",
+    "- KI-Funktionen in Drittsoftware",
+    "",
+    "3. Begriffsbestimmungen",
+    "Künstliche Intelligenz (KI): Softwaregestützte Systeme, die Inhalte generieren, Entscheidungen unterstützen oder automatisierte Analysen durchführen.",
+    "Generative KI: KI-Systeme, die Texte, Bilder, Code oder sonstige Inhalte erzeugen.",
+    "",
+    "4. Zulässige Nutzung",
+    "Die Nutzung von KI-Systemen ist grundsätzlich zulässig, sofern:",
+    "1. keine vertraulichen oder geheimhaltungsbedürftigen Informationen ungeschützt eingegeben werden",
+    "2. keine personenbezogenen Daten ohne Rechtsgrundlage verarbeitet werden",
+    "3. Ergebnisse vor externer Verwendung geprüft werden",
+    "4. keine diskriminierenden oder rechtswidrigen Inhalte erzeugt oder verbreitet werden",
+    "",
+    "Die finale Verantwortung für erzeugte Inhalte verbleibt stets beim verantwortlichen Mitarbeitenden.",
+    "",
+    "5. Verbotene Nutzung",
+    "Untersagt ist insbesondere:",
+    "- die Eingabe von Betriebs- und Geschäftsgeheimnissen in öffentliche KI-Systeme",
+    "- die Verarbeitung sensibler personenbezogener Daten ohne ausdrückliche Freigabe",
+    "- der Einsatz von KI zur automatisierten Entscheidungsfindung mit rechtlicher Wirkung ohne gesonderte Prüfung",
+    "- die Nutzung von KI zur Erstellung rechtswidriger Inhalte",
+    "",
+    "6. Datenschutz und Informationssicherheit",
+    "Bei der Nutzung von KI-Systemen sind die Vorgaben der DSGVO sowie interne Datenschutzrichtlinien einzuhalten.",
+    "",
+    "Insbesondere ist sicherzustellen, dass:",
+    "- keine besonderen Kategorien personenbezogener Daten verarbeitet werden",
+    "- Auftragsverarbeitungsverträge geprüft sind",
+    "- Speicherorte und Datenflüsse transparent dokumentiert sind",
+    "",
+    "7. Transparenz und Dokumentation",
+    "Der Einsatz von KI-Systemen ist intern zu dokumentieren. Hierzu gehört insbesondere:",
+    "- Bezeichnung des eingesetzten Tools",
+    "- Zweck der Nutzung",
+    "- Art der verarbeiteten Daten",
+    "- Risikobewertung",
+    "",
+    "8. Schulung und Sensibilisierung",
+    "Mitarbeitende sind regelmäßig über Risiken generativer KI, Datenschutzanforderungen und sichere Nutzung zu informieren.",
+    "",
+    "9. Verantwortlichkeiten",
+    "Die Geschäftsleitung trägt die Gesamtverantwortung für die Einführung und Überwachung dieser Richtlinie. Führungskräfte stellen die Einhaltung im jeweiligen Verantwortungsbereich sicher.",
+    "",
+    "10. Haftungsausschluss",
+    "Diese Richtlinie stellt eine interne Organisationsmaßnahme dar. Sie ersetzt keine individuelle Rechtsberatung.",
+    "",
+    "11. Inkrafttreten",
+    "Diese Richtlinie tritt mit Veröffentlichung in Kraft."
+  ];
 }
