@@ -31,6 +31,7 @@ function toEnum<T extends string>(x: unknown, allowed: readonly T[], fallback: T
 }
 
 function computeRisk(personalData: PersonalData, externalUse: YesNo, automatedDecisions: YesNo) {
+  // MATRIX: 0–1 Low, 2–3 Medium, 4–6 High
   let score = 0;
 
   if (personalData === "limited") score += 1;
@@ -81,7 +82,6 @@ function industryLabelDe(v: Industry) {
       return "Other";
   }
 }
-
 function industryLabelEn(v: Industry) {
   return industryLabelDe(v);
 }
@@ -138,6 +138,7 @@ async function makeSimplePdf(title: string, lines: string[]) {
   return Buffer.from(await pdf.save());
 }
 
+/** DE: KI-Nutzungsrichtlinie */
 function getKiPolicyDeLines(p: {
   company: string;
   address: string;
@@ -165,35 +166,53 @@ function getKiPolicyDeLines(p: {
     `Stand: ${p.dateISO} | Version: ${p.version}`,
     "",
     "0. Hinweis (Disclaimer)",
-    "Vorlagecharakter. Keine Rechtsberatung. Ohne Gewähr. Diese Richtlinie muss an die konkreten Prozesse und Risiken angepasst werden.",
+    "Vorlagecharakter. Keine Rechtsberatung. Ohne Gewähr. An Prozesse und Risiko-Profil anpassen.",
     "",
     "1. Zweck",
-    "Diese Richtlinie regelt die Nutzung von KI-Systemen im Unternehmen. Ziel ist ein verantwortungsvoller, sicherer und rechtskonformer Einsatz.",
+    "Regelt Mindeststandards für einen verantwortungsvollen, sicheren und rechtskonformen KI-Einsatz.",
     "",
     "2. Grundprinzipien",
-    "- Human Review vor externer Nutzung",
-    "- Datensparsamkeit und Zweckbindung",
-    "- Keine Geheimnisse/Credentials in öffentliche Tools",
-    "- Fakten/Quellen prüfen",
+    "- Human Review vor externer Nutzung von KI-Outputs",
+    "- Datensparsamkeit, Zweckbindung, möglichst anonymisieren/pseudonymisieren",
+    "- Keine Geheimnisse, Zugangsdaten, Tokens oder API-Keys in öffentliche Tools",
+    "- Fakten/Quellen prüfen; keine Täuschung; keine diskriminierenden/rechtswidrigen Inhalte",
     "",
-    "3. Unternehmensspezifische Angaben (aus Fragebogen)",
+    "3. Zulässige Nutzung (Beispiele)",
+    "- Textentwürfe, Zusammenfassungen, Strukturierung, Ideen (mit Prüfung)",
+    "- Programmierhilfe (mit Code-Review)",
+    "- Übersetzungen ohne vertrauliche Inhalte",
+    "",
+    "4. Verbotene Nutzung (No-Go)",
+    "- Geschäfts-/Betriebsgeheimnisse in öffentliche KI ohne Freigabe",
+    "- Sensible personenbezogene Daten ohne Freigabe/Rechtsgrundlage",
+    "- Automatisierte Entscheidungen mit Wirkung ohne spezielle Freigaben/Safeguards",
+    "",
+    "5. Unternehmensspezifische Angaben (aus Fragebogen)",
     `Eingesetzte Tools: ${toolList}`,
     `Use Case: ${uc}`,
     `Personenbezogene Daten: ${personalDataLabelDe(p.personalData)}`,
     `Externe Nutzung: ${p.externalUse === "yes" ? "ja" : "nein"}`,
     `Automatisierte Entscheidungen: ${p.automatedDecisions === "yes" ? "ja" : "nein"}`,
     "",
-    "4. Risiko-Einschätzung (Matrix)",
+    "6. Risiko-Einschätzung (Matrix)",
     `Risikostufe: ${p.risk.level} (Score: ${p.risk.score}/6)`,
     "Empfohlene Maßnahmen:",
     ...p.risk.actions.map((a) => `- ${a}`),
     "",
-    "5. Inkrafttreten",
+    "7. Inkrafttreten",
     "Diese Richtlinie tritt mit Veröffentlichung in Kraft.",
   ];
 }
 
-function getTransparencyDeLines(p: { company: string; dateISO: string; version: string; tools: string[]; useCase: string; externalUse: YesNo }) {
+/** DE: Transparenzhinweis */
+function getTransparencyDeLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  tools: string[];
+  useCase: string;
+  externalUse: YesNo;
+}) {
   const toolList = p.tools.length ? p.tools.join(", ") : "—";
   const uc = p.useCase.trim() || "—";
 
@@ -214,16 +233,26 @@ function getTransparencyDeLines(p: { company: string; dateISO: string; version: 
   ];
 }
 
-function getRiskDeLines(p: { company: string; dateISO: string; version: string; personalData: PersonalData; externalUse: YesNo; automatedDecisions: YesNo; risk: { score: number; level: string; actions: string[] } }) {
+/** DE: Risiko-Selbsteinschätzung */
+function getRiskDeLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  personalData: PersonalData;
+  externalUse: YesNo;
+  automatedDecisions: YesNo;
+  risk: { score: number; level: string; actions: string[] };
+}) {
   return [
     "KI-Risiko-Selbsteinschätzung",
     "",
     `Unternehmen: ${p.company}`,
     `Stand: ${p.dateISO} | Version: ${p.version}`,
     "",
-    `Personenbezogene Daten: ${personalDataLabelDe(p.personalData)}`,
-    `Externe Nutzung: ${p.externalUse === "yes" ? "ja" : "nein"}`,
-    `Automatisierte Entscheidungen: ${p.automatedDecisions === "yes" ? "ja" : "nein"}`,
+    "Checkpunkte:",
+    `- Personenbezogene Daten: ${personalDataLabelDe(p.personalData)}`,
+    `- Externe Nutzung: ${p.externalUse === "yes" ? "ja" : "nein"}`,
+    `- Automatisierte Entscheidungen mit Wirkung: ${p.automatedDecisions === "yes" ? "ja" : "nein"}`,
     "",
     `Ergebnis (Matrix): ${p.risk.level} (Score: ${p.risk.score}/6)`,
     "",
@@ -234,7 +263,15 @@ function getRiskDeLines(p: { company: string; dateISO: string; version: string; 
   ];
 }
 
-function getSummaryDeLines(p: { company: string; dateISO: string; version: string; industry: Industry; employees: Employees; risk: { score: number; level: string } }) {
+/** DE: Compliance Summary */
+function getSummaryDeLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  industry: Industry;
+  employees: Employees;
+  risk: { score: number; level: string };
+}) {
   return [
     "Compliance-Zusammenfassung",
     "",
@@ -254,7 +291,21 @@ function getSummaryDeLines(p: { company: string; dateISO: string; version: strin
   ];
 }
 
-function getAiUsePolicyEnLines(p: { company: string; address: string; dateISO: string; version: string; industry: Industry; employees: Employees; tools: string[]; useCase: string; personalData: PersonalData; externalUse: YesNo; automatedDecisions: YesNo; risk: { score: number; level: string; actions: string[] } }) {
+/** EN: AI Use Policy */
+function getAiUsePolicyEnLines(p: {
+  company: string;
+  address: string;
+  dateISO: string;
+  version: string;
+  industry: Industry;
+  employees: Employees;
+  tools: string[];
+  useCase: string;
+  personalData: PersonalData;
+  externalUse: YesNo;
+  automatedDecisions: YesNo;
+  risk: { score: number; level: string; actions: string[] };
+}) {
   const toolList = p.tools.length ? p.tools.join(", ") : "—";
   const uc = p.useCase.trim() || "—";
 
@@ -282,7 +333,15 @@ function getAiUsePolicyEnLines(p: { company: string; address: string; dateISO: s
   ];
 }
 
-function getTransparencyEnLines(p: { company: string; dateISO: string; version: string; tools: string[]; useCase: string; externalUse: YesNo }) {
+/** EN: Transparency Notice */
+function getTransparencyEnLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  tools: string[];
+  useCase: string;
+  externalUse: YesNo;
+}) {
   const toolList = p.tools.length ? p.tools.join(", ") : "—";
   const uc = p.useCase.trim() || "—";
 
@@ -302,16 +361,26 @@ function getTransparencyEnLines(p: { company: string; dateISO: string; version: 
   ];
 }
 
-function getRiskEnLines(p: { company: string; dateISO: string; version: string; personalData: PersonalData; externalUse: YesNo; automatedDecisions: YesNo; risk: { score: number; level: string; actions: string[] } }) {
+/** EN: Risk Self-Assessment */
+function getRiskEnLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  personalData: PersonalData;
+  externalUse: YesNo;
+  automatedDecisions: YesNo;
+  risk: { score: number; level: string; actions: string[] };
+}) {
   return [
     "AI Risk Self-Assessment",
     "",
     `Company: ${p.company}`,
     `Date: ${p.dateISO} | Version: ${p.version}`,
     "",
-    `Personal data: ${personalDataLabelEn(p.personalData)}`,
-    `External use: ${p.externalUse === "yes" ? "Yes" : "No"}`,
-    `Automated decisions with impact: ${p.automatedDecisions === "yes" ? "Yes" : "No"}`,
+    "Checklist:",
+    `- Personal data: ${personalDataLabelEn(p.personalData)}`,
+    `- External use: ${p.externalUse === "yes" ? "Yes" : "No"}`,
+    `- Automated decisions with impact: ${p.automatedDecisions === "yes" ? "Yes" : "No"}`,
     "",
     `Result (matrix): ${p.risk.level} (Score: ${p.risk.score}/6)`,
     "",
@@ -322,7 +391,15 @@ function getRiskEnLines(p: { company: string; dateISO: string; version: string; 
   ];
 }
 
-function getSummaryEnLines(p: { company: string; dateISO: string; version: string; industry: Industry; employees: Employees; risk: { score: number; level: string } }) {
+/** EN: Compliance Summary */
+function getSummaryEnLines(p: {
+  company: string;
+  dateISO: string;
+  version: string;
+  industry: Industry;
+  employees: Employees;
+  risk: { score: number; level: string };
+}) {
   return [
     "Compliance Summary",
     "",
@@ -350,7 +427,8 @@ export async function POST(req: Request) {
   const address = safeStr(body.address, 200);
 
   if (!sessionId) return Response.json({ error: "missing_session_id" }, { status: 400 });
-  if (!sessionId.startsWith("cs_")) return Response.json({ error: "invalid_session_id", hint: "must start with cs_" }, { status: 400 });
+  if (!sessionId.startsWith("cs_"))
+    return Response.json({ error: "invalid_session_id", hint: "session_id must start with cs_" }, { status: 400 });
   if (!company.trim()) return Response.json({ error: "missing_company" }, { status: 400 });
   if (!address.trim()) return Response.json({ error: "missing_address" }, { status: 400 });
 
@@ -376,7 +454,7 @@ export async function POST(req: Request) {
   const employees = toEnum<Employees>(body.employees, ["1-5", "6-20", "21-50", "51-200", "200+"] as const, "1-5");
 
   const dateISO = new Date().toISOString().slice(0, 10);
-  const version = process.env.APP_VERSION || "1.0-test";
+  const version = process.env.APP_VERSION || "1.0";
 
   let session: Stripe.Checkout.Session;
   try {
@@ -405,17 +483,14 @@ export async function POST(req: Request) {
       getKiPolicyDeLines({ company, address, dateISO, version, industry, employees, tools, useCase, personalData, externalUse, automatedDecisions, risk })
     )
   );
-
   de.file(
     "Transparenzhinweis-KI.pdf",
     await makeSimplePdf("Transparenzhinweis", getTransparencyDeLines({ company, dateISO, version, tools, useCase, externalUse }))
   );
-
   de.file(
     "Risiko-Selbsteinschaetzung.pdf",
     await makeSimplePdf("Risiko-Selbsteinschaetzung", getRiskDeLines({ company, dateISO, version, personalData, externalUse, automatedDecisions, risk }))
   );
-
   de.file(
     "Compliance-Zusammenfassung.pdf",
     await makeSimplePdf("Compliance-Zusammenfassung", getSummaryDeLines({ company, dateISO, version, industry, employees, risk }))
@@ -426,17 +501,14 @@ export async function POST(req: Request) {
     "AI-Use-Policy.pdf",
     await makeSimplePdf("AI Use Policy", getAiUsePolicyEnLines({ company, address, dateISO, version, industry, employees, tools, useCase, personalData, externalUse, automatedDecisions, risk }))
   );
-
   en.file(
     "AI-Transparency-Notice.pdf",
     await makeSimplePdf("AI Transparency Notice", getTransparencyEnLines({ company, dateISO, version, tools, useCase, externalUse }))
   );
-
   en.file(
     "AI-Risk-Self-Assessment.pdf",
     await makeSimplePdf("AI Risk Self-Assessment", getRiskEnLines({ company, dateISO, version, personalData, externalUse, automatedDecisions, risk }))
   );
-
   en.file(
     "Compliance-Summary.pdf",
     await makeSimplePdf("Compliance Summary", getSummaryEnLines({ company, dateISO, version, industry, employees, risk }))
