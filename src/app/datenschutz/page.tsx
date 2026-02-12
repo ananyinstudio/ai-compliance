@@ -11,7 +11,7 @@ export default function Datenschutz() {
       <p>
         Ananyin Studio GmbH<br />
         Berliner Str. 6, 15345 Altlandsberg, Deutschland<br />
-        E-Mail: contact@ananyin.studio
+        E-Mail: info@ananyin-studio.de
       </p>
 
       <h2>2. Verarbeitete Daten</h2>
@@ -71,7 +71,7 @@ export default function Datenschutz() {
 
       <h2>7. Kontakt</h2>
       <p>
-        Für Datenschutzanfragen: contact@ananyin.studio
+        Für Datenschutzanfragen: info@ananyin-studio.de
       </p>
 
       <hr />
